@@ -1,0 +1,17 @@
+readwise_reader/
+├── src/
+│   ├── __init__.py
+│   ├── api/
+│   │   ├── __init__.py
+│   │   ├── client.py
+│   │   └── exceptions.py
+│   ├── models/
+│   │   ├── __init__.py
+│   │   └── page.py
+│   └── utils/
+│       ├── __init__.py
+│       └── logger.py
+├── main.py
+├── requirements.txt
+├── .env
+└── .gitignore 
