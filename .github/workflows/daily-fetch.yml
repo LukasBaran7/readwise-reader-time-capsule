@@ -29,20 +29,10 @@ jobs:
     - name: Create .env file
       run: |
         echo "READWISE_TOKEN=${{ secrets.READWISE_TOKEN }}" > .env
+        echo "MONGODB_URI=${{ secrets.MONGODB_URI }}" >> .env
+        echo "MONGODB_DATABASE=${{ secrets.MONGODB_DATABASE }}" >> .env
+        echo "MONGODB_LATER_COLLECTION=${{ secrets.MONGODB_LATER_COLLECTION }}" >> .env
+        echo "MONGODB_ARCHIVE_COLLECTION=${{ secrets.MONGODB_ARCHIVE_COLLECTION }}" >> .env
 
     - name: Run fetch script
-      run: python main.py
-
-    - name: Upload Later list
-      uses: actions/upload-artifact@v4
-      with:
-        name: readwise-later-list
-        path: readwise_reader_later_snapshot_*.json
-        retention-days: 7
-
-    - name: Upload Archive list
-      uses: actions/upload-artifact@v4
-      with:
-        name: readwise-archive-list
-        path: readwise_reader_archive_snapshot_*.json
-        retention-days: 7 
+      run: python main.py 

@@ -2,8 +2,6 @@ import os
 from typing import Optional, List, Dict
 import requests
 import time
-from datetime import datetime
-import json
 import urllib3
 
 from ..models.page import Page, Result
@@ -47,7 +45,6 @@ class ReadwiseClient:
         urllib3.disable_warnings()
         full_data = []
         next_page_cursor = None
-        current_date = datetime.now().strftime('%Y-%m-%d')
         
         while True:
             params = self.calculate_params(next_page_cursor, location)
@@ -61,12 +58,6 @@ class ReadwiseClient:
             
             if not next_page_cursor:
                 break
-                
-        # Save the data to a JSON file
-        output_file = f'readwise_reader_{location}_snapshot_{current_date}.json'
-        with open(output_file, 'w') as outfile:
-            json.dump(full_data, outfile, indent=4)
-        logger.info(f"Data saved to {output_file}")
         
         return full_data
 
