@@ -16,14 +16,12 @@ class ReadwiseClient:
         """Check if the response indicates rate limiting"""
         if 'results' not in response.json():
             wait_time_in_seconds = response.headers['Retry-After']
-            logger.warning(f"Rate limited, waiting {wait_time_in_seconds} seconds")
             time.sleep(int(wait_time_in_seconds) + 3)
             return True
         return False
 
     def make_request(self, params: Dict) -> requests.Response:
         """Make a request to the Readwise API"""
-        logger.info(f"Making export api request with params {params}")
         return requests.get(
             url=self.base_url,
             params=params,
