@@ -27,6 +27,7 @@ class Result:
     last_opened_at: Optional[str]
     saved_at: Optional[str]
     last_moved_at: Optional[str]
+    html_content: Optional[str] = None
 
 @dataclass
 class Page:
