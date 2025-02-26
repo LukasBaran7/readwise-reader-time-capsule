@@ -11,6 +11,7 @@ class ReadwiseClient:
     def __init__(self, token: str):
         self.token = token
         self.base_url = "https://readwise.io/api/v3/list/"
+        self.request_count = 0
 
     def check_if_rate_limited(self, response: requests.Response) -> bool:
         """Check if the response indicates rate limiting"""
@@ -22,12 +23,26 @@ class ReadwiseClient:
 
     def make_request(self, params: Dict) -> requests.Response:
         """Make a request to the Readwise API"""
-        return requests.get(
+        self.request_count += 1
+        
+        # Log basic request info
+        with_html = 'withHtmlContent' in params and params['withHtmlContent'] == 'true'
+        logger.info(f"Making Readwise API request #{self.request_count}: with_html={with_html}")
+        
+        start_time = time.time()
+        response = requests.get(
             url=self.base_url,
             params=params,
             headers={"Authorization": f"Token {self.token}"},
             verify=False
         )
+        elapsed_time = time.time() - start_time
+        
+        # Log basic response info
+        status = response.status_code
+        logger.info(f"Received response #{self.request_count}: status={status}, time={elapsed_time:.2f}s")
+        
+        return response
 
     def calculate_params(self, next_page_cursor: Optional[str], location: str, with_html_content: bool = False) -> Dict:
         """Calculate request parameters"""
@@ -51,6 +66,9 @@ class ReadwiseClient:
         urllib3.disable_warnings()
         full_data = []
         next_page_cursor = None
+        page_count = 0
+        
+        logger.info(f"Starting document fetch: location={location}, limit={limit}, with_html={with_html_content}")
         
         while True:
             # If we already have enough data, break early
@@ -63,7 +81,9 @@ class ReadwiseClient:
                 remaining = limit - len(full_data)
                 if remaining <= 0:
                     break
-                
+            
+            page_count += 1
+            
             params = self.calculate_params(next_page_cursor, location, with_html_content)
             response = self.make_request(params)
             
@@ -86,7 +106,7 @@ class ReadwiseClient:
             if not next_page_cursor:
                 break
         
-        logger.info(f"Fetched {len(full_data)} documents from {location}")
+        logger.info(f"Fetch complete: {len(full_data)} documents retrieved in {page_count} pages")
         return full_data
 
     def fetch_single_page(self, next_page_cursor: Optional[str] = None, location: str = 'later') -> Optional[Page]:
