@@ -34,6 +34,7 @@ jobs:
         echo "MONGODB_LATER_COLLECTION=${{ secrets.MONGODB_LATER_COLLECTION }}" >> .env
         echo "MONGODB_ARCHIVE_COLLECTION=${{ secrets.MONGODB_ARCHIVE_COLLECTION }}" >> .env
         echo "MONGODB_LATER_HTML_COLLECTION=${{ secrets.MONGODB_LATER_HTML_COLLECTION }}" >> .env
+        echo "MAX_HTML_DOCUMENTS=${{ secrets.MAX_HTML_DOCUMENTS || '6000' }}" >> .env
 
     - name: Run HTML fetch script
       run: python html_fetch.py 
