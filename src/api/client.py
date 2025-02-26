@@ -29,34 +29,64 @@ class ReadwiseClient:
             verify=False
         )
 
-    def calculate_params(self, next_page_cursor: Optional[str], location: str) -> Dict:
+    def calculate_params(self, next_page_cursor: Optional[str], location: str, with_html_content: bool = False) -> Dict:
         """Calculate request parameters"""
         params = {}
         if next_page_cursor:
             params['pageCursor'] = next_page_cursor
         if location:
             params['location'] = location
+        if with_html_content:
+            params['withHtmlContent'] = 'true'
         return params
 
-    def fetch_reader_document_list(self, location: str) -> List[Dict]:
-        """Fetch all documents from the Readwise Reader API for a given location"""
+    def fetch_reader_document_list(self, location: str, limit: int = None, with_html_content: bool = False) -> List[Dict]:
+        """Fetch documents from the Readwise Reader API for a given location
+        
+        Args:
+            location: The location to fetch documents from ('later', 'archive', etc.)
+            limit: Maximum number of documents to fetch (None for all)
+            with_html_content: Whether to include HTML content in the response
+        """
         urllib3.disable_warnings()
         full_data = []
         next_page_cursor = None
         
         while True:
-            params = self.calculate_params(next_page_cursor, location)
+            # If we already have enough data, break early
+            if limit is not None and len(full_data) >= limit:
+                break
+            
+            # Calculate how many more items we need if there's a limit
+            remaining = None
+            if limit is not None:
+                remaining = limit - len(full_data)
+                if remaining <= 0:
+                    break
+                
+            params = self.calculate_params(next_page_cursor, location, with_html_content)
             response = self.make_request(params)
             
             if self.check_if_rate_limited(response):
                 response = self.make_request(params)
-                
-            full_data.extend(response.json()['results'])
-            next_page_cursor = response.json().get('nextPageCursor')
             
+            results = response.json().get('results', [])
+            
+            # Only add up to the limit
+            if limit is not None and len(full_data) + len(results) > limit:
+                results = results[:remaining]
+            
+            full_data.extend(results)
+            
+            # If we've reached the limit or there's no next page, break
+            if limit is not None and len(full_data) >= limit:
+                break
+            
+            next_page_cursor = response.json().get('nextPageCursor')
             if not next_page_cursor:
                 break
         
+        logger.info(f"Fetched {len(full_data)} documents from {location}")
         return full_data
 
     def fetch_single_page(self, next_page_cursor: Optional[str] = None, location: str = 'later') -> Optional[Page]:
