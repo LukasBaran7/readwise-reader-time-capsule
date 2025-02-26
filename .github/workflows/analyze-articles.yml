@@ -29,6 +29,6 @@ jobs:
         MONGODB_URI: ${{ secrets.MONGODB_URI }}
         MONGODB_DATABASE: ${{ secrets.MONGODB_DATABASE }}
         MONGODB_LATER_COLLECTION: ${{ secrets.MONGODB_LATER_COLLECTION }}
-        ANALYSIS_BATCH_SIZE: '100'  # Process 100 articles per run
+        ANALYSIS_BATCH_SIZE: '25000'  # Process 100 articles per run
       run: |
         python analyze_articles.py 
